@@ -30,8 +30,9 @@ def main():
 
     global grib, fcsthr, field, lat, lon, date, hour, cycle, outmap, myvar
     # Set input file name
-    grib='four04e.2012070412.hwrfprs.d1.0p25.f048.grb2'
-    
+    inputdir='/scratch4/BMC/gmtb/jhender/NCEPDEV/stmp4/Judy.K.Henderson/prtutornems'
+    filename='pgrbl024.gfs.2016012200.grib2'
+    grib=inputdir'/'filename 
     # Set forecast hour
     fcsthr=None
     
