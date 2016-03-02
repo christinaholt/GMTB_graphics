@@ -1,4 +1,4 @@
-#! /anaconda/bin python
+#! /usr/bin/env python
 
 
 
@@ -32,15 +32,17 @@ def main():
     # Set input file name
     inputdir='/scratch4/BMC/gmtb/jhender/NCEPDEV/stmp4/Judy.K.Henderson/prtutornems'
     filename='pgrbl024.gfs.2016012200.grib2'
-    grib=inputdir'/'filename 
+    grib='/'.join([inputdir, filename])
+    print grib
     # Set forecast hour
     fcsthr=None
     
+    level=250 
     # Get the variable from file
-    field=get_ua_field(grib,"gh",250,"isobaricInhPa")
+    field=get_ua_field(grib,"gh",level,"isobaricInhPa")
     # Get lat lon info from file
     lat,lon = field.latlons()
-     
+#    print lat,lon 
     date = str(field['dataDate'])
     hour = str(field['hour'])
     myvar = str(field['name'])
@@ -50,7 +52,7 @@ def main():
     
     outmap='glob'
     
-    mymap=maps.global_map(field,lat,lon,date,hour,myvar,'test.png',area_flag=outmap) 
+    mymap=maps.global_map(field,lat,lon,date,hour,myvar,level,'test.png',area_flag=outmap) 
     mymap.run()
     # draw a global map
     
