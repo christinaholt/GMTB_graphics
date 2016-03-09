@@ -3,15 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class general_map:
+class general_map(object):
     def __init__(self,fig_title):
         self._fig_title=fig_title
-        set_fig_params()
-   
+        self.params = self.set_fig_params()
 
-    def set_fig_params():
-        self.params = {
-                 'hgt': {'250': {'int':  12, 'min': 960, 'max': 1110}, 
+    def set_fig_params(self):
+        params = {
+                 'gh': {'250': {'int':  12, 'min': 960, 'max': 1110}, 
                          '500': {'int':   6, 'min': 498, 'max':  600},
                          '700': {'int':   6, 'min': 252, 'max':  324},
                          '850': {'int':   6, 'min': 102, 'max':  178},
@@ -29,7 +28,7 @@ class general_map:
                  'rh'  :{'850': {'int':  10, 'min':   0, 'max': 105},
                          'unit': '%'} 
                  }
-
+        return params
 
     def draw_map(self):
                # Make figure
@@ -39,9 +38,9 @@ class general_map:
         m=self.m
         plt.figure(figsize=(12,8))
         x, y = m(lon,lat)
-        min=fp[self.myvar][str(sefl.level)]['min']
-        max=fp[self.myvar][str(sefl.level)]['max']
-        int=fp[self.myvar][str(sefl.level)]['int']
+        min=fp[self.myvar][str(self.level)]['min']
+        max=fp[self.myvar][str(self.level)]['max']
+        int=fp[self.myvar][str(self.level)]['int']
 
         print 
 
@@ -68,7 +67,6 @@ class general_map:
 #        cbar.set_clim(9000,11000)
         cbar.set_ticks(np.arange(900,1200,24))
         cbar.set_ticklabels(np.arange(900,1200,24))
-        plt.title('Example 2')
 #        plt.show()
 
     #### Change ALL THIS STUFF!!! ###
@@ -89,23 +87,30 @@ class general_map:
         plt.show()
 
     def plot_title(self):
-        # plt.title('%s at %s %s hr fcst from %s cycle' % 
-        # (field.name,field.level,field.pressureUnits,fcsthr,cycle))
-        pass
+         field=self.field
+         date = str(field['dataDate'])
+         hour = str(field['hour'])
+         myvar = str(field['name'])
+         level = str(self.level)
+         punit = str(field['pressureUnits'])
+         fcsthr=str(field['forecastTime'])
+         #cycle=str(field['analysisTime'])
+         plt.title('%s at %s %s %s hr fcst from %s cycle' % 
+         (myvar,level,punit,fcsthr,date))
     def display_map(self):
         pass
 
     def run(self):
         self.draw_map()
 #        self.draw_field()
-#        self.plot_title()
+        self.plot_title()
 #        self.display_map()
         self.save_figure()
 
 
 class global_map(general_map):
     def __init__(self,field,lat,lon,date,hour,myvar,level,fig_title,area_flag=None,ncep_grid=None,resolution=None):
-        #super(global_map).__init__(self,fig_title)
+        super(global_map,self).__init__(fig_title)
 
         self.field=field
         self.lat, self.lon = field.latlons()

@@ -36,10 +36,10 @@ def main():
     print grib
     # Set forecast hour
     fcsthr=None
-    
+    var='gh' 
     level=250 
     # Get the variable from file
-    field=get_ua_field(grib,"gh",level,"isobaricInhPa")
+    field=get_ua_field(grib,var,level,"isobaricInhPa")
     # Get lat lon info from file
     lat,lon = field.latlons()
 #    print lat,lon 
@@ -52,7 +52,7 @@ def main():
     
     outmap='glob'
     
-    mymap=maps.global_map(field,lat,lon,date,hour,myvar,level,'test.png',area_flag=outmap) 
+    mymap=maps.global_map(field,lat,lon,date,hour,var,level,'test.png',area_flag=outmap) 
     mymap.run()
     # draw a global map
     
