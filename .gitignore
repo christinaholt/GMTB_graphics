@@ -1,4 +1,6 @@
 *.swp
 *.pyc
+*.grib2
+.DS_Store
 
 figs/*

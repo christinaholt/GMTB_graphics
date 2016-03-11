@@ -31,8 +31,10 @@ def main():
     global grib, fcsthr, field, lat, lon, date, hour, cycle, outmap, myvar
     # Set input file name
     inputdir='/scratch4/BMC/gmtb/jhender/NCEPDEV/stmp4/Judy.K.Henderson/prtutornems'
+    inputdir='.'
     filename='pgrbl024.gfs.2016012200.grib2'
     grib='/'.join([inputdir, filename])
+    plot_wind=True
     print grib
     # Set forecast hour
     fcsthr=None
@@ -40,6 +42,9 @@ def main():
     level=250 
     # Get the variable from file
     field=get_ua_field(grib,var,level,"isobaricInhPa")
+    if plot_wind: 
+        u = get_ua_field(grib,'u',level,"isobaricInhPa")
+        v = get_ua_field(grib,'v',level,"isobaricInhPa")
     # Get lat lon info from file
     lat,lon = field.latlons()
 #    print lat,lon 
@@ -52,7 +57,8 @@ def main():
     
     outmap='glob'
     
-    mymap=maps.global_map(field,lat,lon,date,hour,var,level,'test.png',area_flag=outmap) 
+    mymap=maps.global_map(field,lat,lon,date,hour,var,level,'test.png',area_flag=outmap,
+                          winds=[u,v], plot_wind=plot_wind) 
     mymap.run()
     # draw a global map
     

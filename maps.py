@@ -10,20 +10,21 @@ class general_map(object):
 
     def set_fig_params(self):
         params = {
-                 'gh': {'250': {'int':  12, 'min': 960, 'max': 1110}, 
+                 'gh': {'250': {'int':  12, 'min': 888, 'max': 1122}, 
                          '500': {'int':   6, 'min': 498, 'max':  600},
-                         '700': {'int':   6, 'min': 252, 'max':  324},
-                         '850': {'int':   6, 'min': 102, 'max':  178},
-                         'unit': 'dm'},
-                 'tmp': {'500': {'int': 2.5, 'min': -75, 'max':  15},
-                         '700': {'int': 2.5, 'min': -45, 'max':  45},
-                         '850': {'int': 2.5, 'min': -45, 'max':  45},
+                         '700': {'int':   3, 'min': 252, 'max':  324},
+                         '850': {'int':   3, 'min': 102, 'max':  178},
+                         'unit': 'dam'},
+                 'tmp': {'250': {'int':   5, 'min': -75, 'max':  15},
+                         '500': {'int':   5, 'min': -75, 'max':  15},
+                         '700': {'int':   5, 'min': -45, 'max':  45},
+                         '850': {'int':   5, 'min': -45, 'max':  45},
                          'unit': 'C'},
                  'vort':{'500': {'int':   2, 'min': -20, 'max':  20},
                          'unit': '10e-5 s-1'}, 
                  'vvel':{'700': {'int':   5, 'min': -23, 'max':  38},
                          'unit': '-Pa/s*10'}, 
-                 'wind':{'250': {'int':  20, 'min':   0, 'max': 220}, 
+                 'wind':{'250': {'int':  20, 'min':  30, 'max': 220}, 
                          'unit': 'kt'},
                  'rh'  :{'850': {'int':  10, 'min':   0, 'max': 105},
                          'unit': '%'} 
@@ -31,18 +32,12 @@ class general_map(object):
         return params
 
     def draw_map(self):
-               # Make figure
+        # Make figure
         lon=self.lon
         lat=self.lat
         fp=self.params 
         m=self.m
-        plt.figure(figsize=(12,8))
-        x, y = m(lon,lat)
-        min=fp[self.myvar][str(self.level)]['min']
-        max=fp[self.myvar][str(self.level)]['max']
-        int=fp[self.myvar][str(self.level)]['int']
-
-        print 
+        plt.figure(figsize=(15,12))
 
         # Draw political boundaries
         m.drawcoastlines()
@@ -56,66 +51,104 @@ class general_map(object):
         m.drawparallels(parallels,labels=[1,0,0,0],fontsize=10)
         meridians = np.arange(0.,360.,20.)
         m.drawmeridians(meridians,labels=[0,0,0,1],fontsize=10)
-        data=self.field.values/10.
-#        lons, lats = np.meshgrid(self.lon, self.lat)
-#        x, y = m(*np.meshgrid(lon, lat))
-#        x, y = m(self.lon, self.lat)
-        clevs = np.arange(min,max,int)
-        cs = m.contourf(x,y,data,clevs,cmap=plt.cm.jet)
-#        cs.set_clim()
-        cbar=plt.colorbar(cs,orientation='horizontal')
-#        cbar.set_clim(9000,11000)
-        cbar.set_ticks(np.arange(900,1200,24))
-        cbar.set_ticklabels(np.arange(900,1200,24))
-#        plt.show()
 
     #### Change ALL THIS STUFF!!! ###
     def save_figure(self):
         filename="test.png"
-       # plt.title('%s UTC %s' % (VT, day2.strftime('%Y-%m-%d')), fontsize=44)
-        plt.savefig('./figs/%s' % filename, bbox_inches='tight')
+        plt.savefig('./figs/%s' % filename)
         plt.close()
 
 
-    def draw_field(self):
+    def fill_field(self):
         data=self.field.values
         m=self.m
+        fp=self.params
+        data=self.field.values/10.
         x, y = m(self.lon,self.lat)
-        cs = plt.pcolormesh(x,y,data,shading='flat',cmap=plt.cm.jet)
-        plt.colorbar(cs,orientation='vertical')
-        plt.title('Example 2')
-        plt.show()
+        min=fp[self.myvar][str(self.level)]['min']
+        max=fp[self.myvar][str(self.level)]['max']
+        int=fp[self.myvar][str(self.level)]['int']
+
+        clevs = np.arange(min,max,int)
+        cs = m.contourf(x,y,data,clevs,cmap=plt.cm.jet)
+        cbar=plt.colorbar(cs,orientation='vertical',shrink=0.8)
+
+
+    def contour_field(self):
+        m=self.m
+        fp=self.params
+        data=self.field.values/10.
+        x, y = m(self.lon,self.lat)
+        min=fp[self.myvar][str(self.level)]['min']
+        max=fp[self.myvar][str(self.level)]['max']
+        int=fp[self.myvar][str(self.level)]['int']
+
+        clevs = np.arange(min,max,int)
+        cc = m.contour(x,y,data,clevs, colors='k')
+        plt.clabel(cc, fontsize=10, inline=1, fmt= '%4.0f')
+
+
+    def wind_field(self):
+        m=self.m
+        fp=self.params
+        u=self.u.values
+        v=self.v.values
+        
+        # Mask for winds
+        maskarray = np.ones(u.shape)
+        maskarray[::4,::4] = 0
+       
+        mu = np.ma.masked_array(u, mask=maskarray) 
+        mv = np.ma.masked_array(v, mask=maskarray) 
+        x, y = m(self.lon,self.lat)
+
+        self.barbs = m.barbs(x, y, mu, mv, barbcolor='k' )
 
     def plot_title(self):
          field=self.field
+         fp=self.params
          date = str(field['dataDate'])
-         hour = str(field['hour'])
          myvar = str(field['name'])
+         atime = field.analDate.strftime('Analysis: %Y%m%d %H UTC')
+         vtime = field.validDate.strftime('Valid: %Y%m%d %H UTC')
+
          level = str(self.level)
          punit = str(field['pressureUnits'])
+         vunit = fp[self.myvar]['unit']
+         maptype = 'shaded'
          fcsthr=str(field['forecastTime'])
          #cycle=str(field['analysisTime'])
-         plt.title('%s at %s %s %s hr fcst from %s cycle' % 
-         (myvar,level,punit,fcsthr,date))
+         plt.title('%s \nFcst Hr: %s' % (atime, fcsthr) , loc='left')
+         plt.title('%s %s' % (level,punit), position=(0.5, 1.04), fontsize=18)
+         plt.title('%s (%s, %s)' % (myvar,vunit,maptype)
+               , loc = 'right')
+         plt.xlabel('%s' % (vtime), fontsize=18, labelpad=40)
+
     def display_map(self):
-        pass
+        plt.show()
 
     def run(self):
         self.draw_map()
-#        self.draw_field()
+        self.fill_field()
+        self.contour_field()
+        self.wind_field()
         self.plot_title()
 #        self.display_map()
         self.save_figure()
 
 
 class global_map(general_map):
-    def __init__(self,field,lat,lon,date,hour,myvar,level,fig_title,area_flag=None,ncep_grid=None,resolution=None):
+    def __init__(self,field,lat,lon,date,hour,myvar,level,fig_title,area_flag=None,ncep_grid=None,
+                 resolution=None, winds=None, plot_wind=False):
         super(global_map,self).__init__(fig_title)
 
         self.field=field
         self.lat, self.lon = field.latlons()
         self.myvar=myvar
         self.level=level
+        self.u = winds[0]
+        self.v = winds[1]
+        
         if area_flag == None or area_flag == 'glob':
             self.m=Basemap(projection='mill',lat_ts=10,llcrnrlon=0,
                 urcrnrlon=357.5,llcrnrlat=-90,urcrnrlat=90,
